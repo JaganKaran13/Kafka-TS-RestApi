@@ -11,6 +11,4 @@ const app = createExpressServer({
 app.use(bodyParser.json());
 
 // run express application on port 1306
-app.listen(1306), () => {
-    console.log("App is running at http://localhost:1306")
-};
+app.listen(1306);
