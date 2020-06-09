@@ -1,4 +1,5 @@
 import "reflect-metadata"; // this shim is required
+import * as bodyParser from "body-parser";
 import { createExpressServer } from "routing-controllers";
 import { KafkaController } from "./controller/KafkaController";
 
@@ -7,5 +8,9 @@ const app = createExpressServer({
     controllers: [KafkaController] // we specify controllers we want to use
 });
 
-// run express application on port 3000
-app.listen(1306);
+app.use(bodyParser.json());
+
+// run express application on port 1306
+app.listen(1306), () => {
+    console.log("App is running at http://localhost:1306")
+};
