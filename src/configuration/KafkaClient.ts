@@ -2,7 +2,8 @@ import { Kafka } from 'kafkajs';
 
 /**
  * Kafka Client Class.
- */export class KafkaClient {
+ */
+export class KafkaClient {
 
     /**
      * Function which returns kafka configurations.
