@@ -13,7 +13,7 @@ const app = createExpressServer({
 app.use(bodyParser.json());
 
 // Initialize the consumer on application startup.
-new ConsumerConfig("restApplicationGroup", "producerTopic");
+new ConsumerConfig("restApplicationGroup", "transaction");
 
 // run express application on port 1306
 app.listen(1306);

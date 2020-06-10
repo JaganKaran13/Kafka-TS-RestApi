@@ -30,14 +30,13 @@ export class KafkaController {
      * @param userDetails User Details received as body from the user.
      */
     @Post('/')
-    public produceMessage(@Req() req: Request, @Res() res: Response, @Body() userDetails: UserModel) {
+    public async produceMessage(@Req() req: Request, @Res() res: Response, @Body() userDetails: UserModel): Promise<any> {
         try {
-            let topicName: string = "producerTopic";
+            let topicName: string = 'transaction';
             let key: string = "sampleKey";
             // validate the schema, if valid message is published to the topic.
             if (this.validateSchema(userDetails)) {
-                console.log(userDetails);
-                this.kafkaProducer.publishMessageToTopic(topicName, key, userDetails);
+                await this.kafkaProducer.publishMessageToTopic(topicName, key, userDetails);
                 return res.sendStatus(200);
             } else {
                 // bad request is thrown to the user.

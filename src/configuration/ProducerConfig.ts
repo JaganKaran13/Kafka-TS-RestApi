@@ -1,5 +1,5 @@
 import { KafkaClient } from "./KafkaClient";
-import { Producer } from "kafkajs";
+import { Producer, Transaction } from "kafkajs";
 
 /**
  * Producer Config Class.
@@ -17,7 +17,8 @@ export class ProducerConfig {
      */
     constructor() {
         this.kafkaClient = new KafkaClient;
-        this.kafkaProducer = this.kafkaClient.kafkaProperties().producer();
+        this.kafkaProducer = this.kafkaClient.kafkaProperties().producer(
+            { maxInFlightRequests: 1, idempotent: true, transactionalId: "transactional-id" });
     }
 
     /**
@@ -27,17 +28,40 @@ export class ProducerConfig {
      * @param key Key value of the message.
      * @param message Message to be sent.
      */
-    public publishMessageToTopic(topicName: string, key: string, message: any) {
-        // Send the message to topic
-        this.kafkaProducer.send({
-            // Topic name
-            topic: topicName,
-            // Message to be produced in the topic.
-            messages: [{
-                key: key,
-                value: Buffer.from(JSON.stringify(message))
-            }]
-        })
-
+    public async publishMessageToTopic(topicName: string, key: string, message: any): Promise<void> {
+        console.log("publishMessageToTopic")
+        let kafkaTransaction: Transaction = await this.kafkaProducer.transaction();
+        try {
+            let iterator: number = 0;
+            while (iterator < 3) {
+                console.log("Iterator::" + iterator)
+                await kafkaTransaction.send({
+                    // Topic name
+                    topic: topicName,
+                    // Message to be produced in the topic.
+                    messages: [{
+                        key: key,
+                        value: Buffer.from(JSON.stringify(message))
+                    }]
+                });
+                if (iterator == 2) {
+                    throw "Dummy error";
+                }
+                iterator = iterator + 1;
+            }
+            kafkaTransaction.sendOffsets({
+                consumerGroupId: "restApplicationGroup", topics: [{
+                    topic: topicName,
+                    partitions: [{
+                        partition: 0,
+                        offset: "50"
+                    }]
+                }]
+            })
+            await kafkaTransaction.commit();
+        } catch (error) {
+            console.log(error);
+            await kafkaTransaction.abort();
+        }
     }
 }

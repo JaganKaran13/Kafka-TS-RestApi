@@ -8,7 +8,8 @@
     "start": "npm run build && npm run serve",
     "serve": "nodemon dist/server.js",
     "build-ts": "tsc",
-    "watch-ts": "tsc -w"
+    "watch-ts": "tsc -w",
+    "clean": "rm -rf dist/ node_modules/ package-lock.json && npm i"
   },
   "repository": {
     "type": "git",
