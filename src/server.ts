@@ -2,6 +2,7 @@ import "reflect-metadata"; // this shim is required
 import * as bodyParser from "body-parser";
 import { createExpressServer } from "routing-controllers";
 import { KafkaController } from "./controller/KafkaController";
+import { ConsumerConfig } from "./configuration/ConsumerConfig";
 
 // creates express app, registers all controller routes and returns you express app instance
 const app = createExpressServer({
@@ -9,6 +10,8 @@ const app = createExpressServer({
 });
 
 app.use(bodyParser.json());
+
+new ConsumerConfig("restApplicationGroup", "producerTopic");
 
 // run express application on port 1306
 app.listen(1306);
