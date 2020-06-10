@@ -9,8 +9,10 @@ const app = createExpressServer({
     controllers: [KafkaController] // we specify controllers we want to use
 });
 
+// Parse the input to JSON format.
 app.use(bodyParser.json());
 
+// Initialize the consumer on application startup.
 new ConsumerConfig("restApplicationGroup", "producerTopic");
 
 // run express application on port 1306

@@ -16,7 +16,6 @@ export class ProducerConfig {
      * Constructor class which connect the service to kafka on application startup.
      */
     constructor() {
-        console.log("Inside Producer COnfig constructor.")
         this.kafkaClient = new KafkaClient;
         this.kafkaProducer = this.kafkaClient.kafkaProperties().producer();
     }
