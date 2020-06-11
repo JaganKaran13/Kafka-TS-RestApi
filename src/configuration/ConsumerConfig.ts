@@ -39,15 +39,18 @@ export class ConsumerConfig {
           key: message.key.toString(),
           value: message.value.toString(),
           headers: message.headers,
+          offset: message.offset,
         });
       },
     });
 
-    // this.kafkaConsumer.commitOffsets([{
-    //     topic: topicName,
-    //     partition: 0,
-    //     offset: '40'
-    // }])
-    // this.kafkaConsumer.seek({ topic: topicName, partition: 0, offset: '40' })
+    this.kafkaConsumer.commitOffsets([
+      {
+        topic: topicName,
+        partition: 0,
+        offset: "10",
+      },
+    ]);
+    // this.kafkaConsumer.seek({ topic: topicName, partition: 0, offset: "20" });
   }
 }

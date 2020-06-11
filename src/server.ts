@@ -6,7 +6,7 @@ import { ConsumerConfig } from "./configuration/ConsumerConfig";
 
 // creates express app, registers all controller routes and returns you express app instance
 const app = createExpressServer({
-    controllers: [KafkaController] // we specify controllers we want to use
+  controllers: [KafkaController], // we specify controllers we want to use
 });
 
 // Parse the input to JSON format.
