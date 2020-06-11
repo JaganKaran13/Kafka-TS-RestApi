@@ -47,7 +47,7 @@ export class KafkaController {
         );
         await this.kafkaProducer.publishMessageToTopicWithTransaction(
           producerRecord,
-          true
+          false
         );
         return res.sendStatus(200);
       } else {

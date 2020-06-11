@@ -1,5 +1,6 @@
 import { KafkaClient } from "./KafkaClient";
 import { Producer, Transaction, ProducerRecord } from "kafkajs";
+import { ErrorModel } from "../models/ErrorModel";
 
 /**
  * Producer Config Class.
@@ -11,13 +12,6 @@ export class ProducerConfig {
   // Kafka Producer instance.
   private kafkaProducer: Producer;
 
-  private MyPartitioner = () => {
-    return ({}) => {
-      // select a partition based on some logic
-      // return the partition number
-      return 0;
-    };
-  };
   /**
    * Constructor class which connect the service to kafka on application startup.
    */
@@ -40,49 +34,32 @@ export class ProducerConfig {
     producerRecord: ProducerRecord,
     induceError: boolean
   ): Promise<void> {
-    console.log("publishMessageToTopicWithTransaction");
-    if (induceError) {
-      let invalidProducer = this.kafkaClient.kafkaProperties().producer({
-        createPartitioner: this.MyPartitioner,
-        maxInFlightRequests: 1,
-        idempotent: true,
-        transactionalId: "transactional-id",
-      });
-      let invalidKafkaTransaction: Transaction = await invalidProducer.transaction();
-
-      try {
-        invalidKafkaTransaction.send(producerRecord);
-        throw "exception";
-        await invalidKafkaTransaction.commit();
-      } catch (error) {
-        console.log(error);
-        await invalidKafkaTransaction.abort();
-        await this.publishMessageToErrorTopic(producerRecord);
-      }
-    } else {
-      let kafkaTransaction: Transaction = await this.kafkaProducer.transaction();
-
-      try {
+    let kafkaTransaction: Transaction = await this.kafkaProducer.transaction();
+    try {
+      if (induceError) {
         await kafkaTransaction.send(producerRecord);
-        await kafkaTransaction.sendOffsets({
-          consumerGroupId: "restApplicationGroup",
-          topics: [
-            {
-              topic: producerRecord.topic,
-              partitions: [
-                {
-                  partition: 0,
-                  offset: "30",
-                },
-              ],
-            },
-          ],
-        });
-        await kafkaTransaction.commit();
-      } catch (error) {
-        console.log(error);
-        await kafkaTransaction.abort();
+        throw new ErrorModel("400", "Bad Request");
       }
+      await kafkaTransaction.send(producerRecord);
+      await kafkaTransaction.sendOffsets({
+        consumerGroupId: "restApplicationGroup",
+        topics: [
+          {
+            topic: producerRecord.topic,
+            partitions: [
+              {
+                partition: 0,
+                offset: "30",
+              },
+            ],
+          },
+        ],
+      });
+      await kafkaTransaction.commit();
+    } catch (error) {
+      console.log(error);
+      await kafkaTransaction.abort();
+      await this.publishMessageToErrorTopic(producerRecord, error);
     }
   }
 
@@ -103,10 +80,22 @@ export class ProducerConfig {
    * @param producerRecord Producer Metadata.
    */
   public async publishMessageToErrorTopic(
-    producerRecord: ProducerRecord
+    producerRecord: ProducerRecord,
+    error: ErrorModel
   ): Promise<any> {
     let errorTopic: string = "errorTopic";
-    producerRecord.topic = errorTopic;
-    this.kafkaProducer.send(producerRecord);
+    let newErrorRecord: ProducerRecord = {
+      topic: errorTopic,
+      messages: [
+        {
+          key: producerRecord.messages[0].key,
+          value: producerRecord.messages[0].value,
+          headers: {
+            errorMessage: error.description,
+          },
+        },
+      ],
+    };
+    this.kafkaProducer.send(newErrorRecord);
   }
 }
