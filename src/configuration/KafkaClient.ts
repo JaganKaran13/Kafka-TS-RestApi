@@ -16,9 +16,17 @@ export class KafkaClient {
       brokers: ["localhost:9093"],
       ssl: {
         rejectUnauthorized: false,
-        ca: [fs.readFileSync("/home/jagan/Desktop/Nasco/SSL/ca-cert.pem")],
-        passphrase: "qwerty",
-        cert: fs.readFileSync("/home/jagan/Desktop/Nasco/SSL/cert-signed.pem"),
+        ca: [
+          fs.readFileSync(
+            "/home/jagan/Desktop/Nasco/Security/ca-cert",
+            "utf-8"
+          ),
+        ],
+        cert: fs.readFileSync(
+          "/home/jagan/Desktop/Nasco/Security/local-client-cert-signed"
+        ),
+        key: fs.readFileSync("/home/jagan/Desktop/Nasco/Security/client.pem"),
+        passphrase: "123456",
       },
     });
     return kafka;
