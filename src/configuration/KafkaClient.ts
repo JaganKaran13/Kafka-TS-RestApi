@@ -18,14 +18,14 @@ export class KafkaClient {
         rejectUnauthorized: false,
         ca: [
           fs.readFileSync(
-            "/home/jagan/Desktop/Nasco/Security/ca-cert",
+            "/home/jagan/Desktop/Security/ca-cert",
             "utf-8"
           ),
         ],
         cert: fs.readFileSync(
-          "/home/jagan/Desktop/Nasco/Security/local-client-cert-signed"
+          "/home/jagan/Desktop/Security/local-client-cert-signed"
         ),
-        key: fs.readFileSync("/home/jagan/Desktop/Nasco/Security/client.pem"),
+        key: fs.readFileSync("/home/jagan/Desktop/Security/client.pem"),
         passphrase: "123456",
       },
     });
